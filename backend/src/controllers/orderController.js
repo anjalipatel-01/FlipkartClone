@@ -2,9 +2,10 @@ const db = require('../db');
 const { asyncHandler } = require('../middlewares/errorHandler');
 const { sendOrderConfirmationEmail } = require('../utils/emailService');
 
-// POST /api/orders  — body: { shipping_name, shipping_phone, shipping_address, shipping_city, shipping_state, shipping_pincode }
+// POST /api/orders  — body: { items: [{product_id, quantity}], shipping_name, shipping_phone, shipping_address, shipping_city, shipping_state, shipping_pincode }
 const placeOrder = asyncHandler(async (req, res) => {
   const {
+    items,
     shipping_name,
     shipping_phone,
     shipping_address,
@@ -17,32 +18,66 @@ const placeOrder = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: 'shipping_address is required' });
   }
 
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ success: false, message: 'Cart is empty' });
+  }
+
+  // Extract and validate product_id / quantity from the request
+  const requestedItems = items.map((i) => ({
+    product_id: Number(i.product_id),
+    quantity: Number(i.quantity),
+  }));
+
+  for (const ri of requestedItems) {
+    if (!ri.product_id || !ri.quantity || ri.quantity < 1) {
+      return res.status(400).json({ success: false, message: 'Invalid item in cart' });
+    }
+  }
+
+  const productIds = requestedItems.map((i) => i.product_id);
+
   const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
 
-    // Fetch cart items with current product prices
-    const { rows: cartItems } = await client.query(
-      `SELECT c.id AS cart_id, c.product_id, c.quantity, p.price, p.stock, p.name AS product_name
-       FROM cart c
-       JOIN products p ON p.id = c.product_id
-       WHERE c.user_id = $1
+    // Fetch products with lock to prevent concurrent stock changes
+    const { rows: products } = await client.query(
+      `SELECT id, name AS product_name, price, stock
+       FROM products
+       WHERE id = ANY($1::int[])
        FOR UPDATE`,
-      [req.user.id]
+      [productIds]
     );
 
-    if (!cartItems.length) {
+    if (products.length !== productIds.length) {
       await client.query('ROLLBACK');
-      return res.status(400).json({ success: false, message: 'Cart is empty' });
+      return res.status(400).json({ success: false, message: 'One or more products not found' });
     }
 
-    // Validate stock for every item
+    // Build a lookup map
+    const productMap = {};
+    for (const p of products) {
+      productMap[p.id] = p;
+    }
+
+    // Merge requested quantities with DB prices and validate stock
+    const cartItems = requestedItems.map((ri) => {
+      const prod = productMap[ri.product_id];
+      return {
+        product_id:   ri.product_id,
+        quantity:      ri.quantity,
+        price:         prod.price,
+        stock:         prod.stock,
+        product_name:  prod.product_name,
+      };
+    });
+
     for (const item of cartItems) {
       if (item.stock < item.quantity) {
         await client.query('ROLLBACK');
         return res.status(400).json({
           success: false,
-          message: `Insufficient stock for product id ${item.product_id}`,
+          message: `Insufficient stock for "${item.product_name}"`,
         });
       }
     }
@@ -85,9 +120,6 @@ const placeOrder = asyncHandler(async (req, res) => {
         [item.quantity, item.product_id]
       );
     }
-
-    // Clear the cart
-    await client.query('DELETE FROM cart WHERE user_id = $1', [req.user.id]);
 
     await client.query('COMMIT');
 
