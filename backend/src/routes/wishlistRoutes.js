@@ -9,7 +9,7 @@ const { verifyToken } = require('../middlewares/auth');
 
 router.get('/',                    verifyToken, getWishlist);
 router.post('/',                   verifyToken, addToWishlist);
-router.delete('/:product_id',      verifyToken, removeFromWishlist);
 router.get('/check/:product_id',   verifyToken, checkWishlist);
+router.delete('/:product_id',      verifyToken, removeFromWishlist);
 
 module.exports = router;

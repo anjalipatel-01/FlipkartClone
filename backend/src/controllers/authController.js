@@ -2,7 +2,6 @@ const bcrypt = require('bcryptjs');
 const jwt    = require('jsonwebtoken');
 const db     = require('../db');
 const { asyncHandler } = require('../middlewares/errorHandler');
-const { verifyToken }  = require('../middlewares/auth');
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -39,13 +38,6 @@ const register = asyncHandler(async (req, res) => {
     [name, email, password_hash, phone || null]
   );
   const user = rows[0];
-
-  // Create an empty cart for the new user
-  await db.query(
-    `INSERT INTO cart (user_id, product_id, quantity)
-     SELECT $1, id, 0 FROM products WHERE FALSE`,
-    [user.id]
-  );
 
   const token = signToken({ id: user.id, name: user.name, email: user.email });
   res.cookie('token', token, COOKIE_OPTIONS);
