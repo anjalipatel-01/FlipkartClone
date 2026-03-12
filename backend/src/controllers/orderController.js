@@ -152,7 +152,7 @@ const placeOrder = asyncHandler(async (req, res) => {
 
 // GET /api/orders
 const getOrders = asyncHandler(async (req, res) => {
-  const { rows } = await db.query(
+  const { rows: orders } = await db.query(
     `SELECT id, total_amount, status, shipping_name, shipping_address,
             shipping_city, shipping_state, shipping_pincode, created_at
      FROM orders
@@ -160,7 +160,31 @@ const getOrders = asyncHandler(async (req, res) => {
      ORDER BY created_at DESC`,
     [req.user.id]
   );
-  res.json({ success: true, data: rows });
+
+  // Attach items for each order
+  for (const order of orders) {
+    const { rows: items } = await db.query(
+      `SELECT
+         oi.id, oi.quantity, oi.unit_price, oi.total_price,
+         p.id   AS product_id,
+         p.name AS product_name,
+         p.brand,
+         (
+           SELECT image_url FROM product_images
+           WHERE product_id = p.id
+           ORDER BY display_order ASC
+           LIMIT 1
+         ) AS thumbnail
+       FROM order_items oi
+       LEFT JOIN products p ON p.id = oi.product_id
+       WHERE oi.order_id = $1
+       ORDER BY oi.id ASC`,
+      [order.id]
+    );
+    order.items = items;
+  }
+
+  res.json({ success: true, data: orders });
 });
 
 // GET /api/orders/:id
