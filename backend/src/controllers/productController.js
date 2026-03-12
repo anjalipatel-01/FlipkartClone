@@ -29,7 +29,7 @@ const getProducts = asyncHandler(async (req, res) => {
   if (search) {
     params.push(`%${search}%`);
     conditions.push(
-      `(p.name ILIKE $${params.length} OR p.brand ILIKE $${params.length} OR p.description ILIKE $${params.length})`
+      `(p.name ILIKE $${params.length} OR p.brand ILIKE $${params.length} OR p.description ILIKE $${params.length} OR c.name ILIKE $${params.length})`
     );
   }
 
@@ -48,6 +48,15 @@ const getProducts = asyncHandler(async (req, res) => {
     rating:     'p.rating DESC',
   };
   sql += ' ORDER BY ' + (orderMap[sort] || 'p.created_at DESC');
+
+  const { limit } = req.query;
+  if (limit) {
+    const n = parseInt(limit, 10);
+    if (n > 0) {
+      params.push(n);
+      sql += ` LIMIT $${params.length}`;
+    }
+  }
 
   const { rows } = await db.query(sql, params);
 
