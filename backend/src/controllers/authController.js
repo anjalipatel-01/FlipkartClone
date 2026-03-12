@@ -83,7 +83,7 @@ const logout = asyncHandler(async (req, res) => {
 // GET /api/auth/me  (protected by verifyToken in router)
 const getMe = asyncHandler(async (req, res) => {
   const { rows } = await db.query(
-    'SELECT id, name, email, phone, created_at FROM users WHERE id = $1',
+    'SELECT id, name, email, phone, gender, created_at FROM users WHERE id = $1',
     [req.user.id]
   );
   if (!rows.length) {
@@ -92,4 +92,31 @@ const getMe = asyncHandler(async (req, res) => {
   res.json({ success: true, data: rows[0] });
 });
 
-module.exports = { register, login, logout, getMe };
+// PUT /api/auth/me  (protected by verifyToken in router)
+const updateProfile = asyncHandler(async (req, res) => {
+  const { name, phone, gender } = req.body;
+
+  const fields = [];
+  const values = [];
+  let idx = 1;
+
+  if (name !== undefined)   { fields.push(`name = $${idx++}`);   values.push(name); }
+  if (phone !== undefined)  { fields.push(`phone = $${idx++}`);  values.push(phone || null); }
+  if (gender !== undefined) { fields.push(`gender = $${idx++}`); values.push(gender || null); }
+
+  if (!fields.length) {
+    return res.status(400).json({ success: false, message: 'No fields to update' });
+  }
+
+  values.push(req.user.id);
+  const { rows } = await db.query(
+    `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING id, name, email, phone, gender, created_at`,
+    values
+  );
+
+  if (!rows.length) {
+    return res.status(404).json({ success: false, message: 'User not found' });
+  }
+
+  res.json({ success: true, data: rows[0] });
+}); = { register, login, logout, getMe, updateProfile };
