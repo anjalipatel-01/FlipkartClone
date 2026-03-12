@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-fk-blue: #2874f0;
+  --color-fk-blue-dark: #1a5dc8;
+  --color-fk-yellow: #ffe500;
+  --color-fk-green: #388e3c;
+  --color-fk-red: #ff6161;
+  --color-fk-orange: #ff9f00;
+  --color-fk-bg: #f1f3f6;
+  --color-fk-text: #212121;
+  --color-fk-text-light: #878787;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f1f3f6;
+  color: #212121;
+  font-family: Roboto, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide scrollbar for category bar */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Toast slide-up animation (from bottom) */
+@keyframes toast-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.toast-enter {
+  animation: toast-slide-up 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Button pop animation on Add → Go to Cart transition */
+@keyframes btn-pop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.btn-pop {
+  animation: btn-pop 0.28s ease-out forwards;
+}
