@@ -185,8 +185,8 @@ Frontend runs on: http://localhost:5173
 Visit: http://localhost:5173
 
 Test credentials:
-- Email: test@flipkart.com
-- Password: password123
+- Email: user@gmail.com
+- Password: user1234
 
 ## 🔐 Environment Variables
 
