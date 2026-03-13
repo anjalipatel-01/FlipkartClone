@@ -21,12 +21,24 @@ const allowedOrigins = [
   'http://localhost:3001',
   'https://flipkart-clone-demo.vercel.app',
   process.env.FRONTEND_URL,
+  ...(process.env.CORS_ORIGINS || '').split(',').map((o) => o.trim()).filter(Boolean),
 ].filter(Boolean);
+
+const allowedOriginPatterns = [
+  // Vercel preview URLs for this project, for example:
+  // https://flipkart-clone-xyz-username.vercel.app
+  /^https:\/\/flipkart-clone-[a-z0-9-]+\.vercel\.app$/i,
+];
+
+const isAllowedOrigin = (origin) => {
+  if (allowedOrigins.includes(origin)) return true;
+  return allowedOriginPatterns.some((pattern) => pattern.test(origin));
+};
 
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (e.g. mobile apps, curl, Postman)
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || isAllowedOrigin(origin)) {
       callback(null, true);
     } else {
       callback(new Error(`CORS: origin '${origin}' not allowed`));
