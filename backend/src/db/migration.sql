@@ -17,6 +17,9 @@ CREATE TABLE IF NOT EXISTS users (
 -- Add password_hash if users table already existed without it
 ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255) NOT NULL DEFAULT '';
 
+-- Add gender for profile read/update support
+ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(20);
+
 -- 2. Ensure cart and orders have user_id (no-op if already present)
 ALTER TABLE cart   ADD COLUMN IF NOT EXISTS user_id INT REFERENCES users(id);
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS user_id INT REFERENCES users(id);

@@ -14,6 +14,7 @@ CREATE TABLE users (
   name VARCHAR(100) NOT NULL,
   email VARCHAR(150) UNIQUE NOT NULL,
   phone VARCHAR(15),
+  gender VARCHAR(20),
   created_at TIMESTAMP DEFAULT NOW()
 );
 
