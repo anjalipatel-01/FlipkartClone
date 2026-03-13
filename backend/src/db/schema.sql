@@ -13,6 +13,7 @@ CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   email VARCHAR(150) UNIQUE NOT NULL,
+  password_hash VARCHAR(255),
   phone VARCHAR(15),
   gender VARCHAR(20),
   created_at TIMESTAMP DEFAULT NOW()
