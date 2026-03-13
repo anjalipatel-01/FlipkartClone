@@ -12,6 +12,30 @@
   --color-fk-text-light: #878787;
 }
 
+/* ── Flipkart-style scrollable image grid ── */
+.image-grid-container {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+  scroll-behavior: smooth;
+}
+.image-grid-container::-webkit-scrollbar {
+  width: 4px;
+}
+.image-grid-container::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+.image-grid-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Mobile: single column grid on small screens */
+@media (max-width: 639px) {
+  .image-grid-container .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -28,6 +52,7 @@ body {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -35,19 +60,36 @@ body {
 
 /* Toast slide-up animation (from bottom) */
 @keyframes toast-slide-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 .toast-enter {
   animation: toast-slide-up 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Button pop animation on Add → Go to Cart transition */
 @keyframes btn-pop {
-  0%   { transform: scale(1); }
-  45%  { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
+
 .btn-pop {
   animation: btn-pop 0.28s ease-out forwards;
 }

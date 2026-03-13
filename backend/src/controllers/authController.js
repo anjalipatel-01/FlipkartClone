@@ -1,13 +1,13 @@
 const bcrypt = require('bcryptjs');
-const jwt    = require('jsonwebtoken');
-const db     = require('../db');
+const jwt = require('jsonwebtoken');
+const db = require('../db');
 const { asyncHandler } = require('../middlewares/errorHandler');
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure:   process.env.NODE_ENV === 'production',
+  secure: process.env.NODE_ENV === 'production',
   sameSite: 'lax',
-  maxAge:   7 * 24 * 60 * 60 * 1000, // 7 days in ms
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
 };
 
 const signToken = (payload) =>
@@ -100,8 +100,8 @@ const updateProfile = asyncHandler(async (req, res) => {
   const values = [];
   let idx = 1;
 
-  if (name !== undefined)   { fields.push(`name = $${idx++}`);   values.push(name); }
-  if (phone !== undefined)  { fields.push(`phone = $${idx++}`);  values.push(phone || null); }
+  if (name !== undefined) { fields.push(`name = $${idx++}`); values.push(name); }
+  if (phone !== undefined) { fields.push(`phone = $${idx++}`); values.push(phone || null); }
   if (gender !== undefined) { fields.push(`gender = $${idx++}`); values.push(gender || null); }
 
   if (!fields.length) {
@@ -119,4 +119,6 @@ const updateProfile = asyncHandler(async (req, res) => {
   }
 
   res.json({ success: true, data: rows[0] });
-}); = { register, login, logout, getMe, updateProfile };
+});
+
+module.exports = { register, login, logout, getMe, updateProfile };

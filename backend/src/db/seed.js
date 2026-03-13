@@ -370,7 +370,7 @@ async function seed() {
       specs: [['Fit', 'Slim'], ['Fabric', '100% Cotton'], ['Rise', 'Mid Rise'], ['Closure', 'Zipper with Hook & Bar'], ['Occasion', 'Casual, Semi-Formal']]
     },
     {
-      category_slug: 'fashion', name: 'W Women Printed Anarkali Kurta', slug: 'w-women-anarkali-kurta',
+      category_slug: 'fashion', name: ' Women Printed Anarkali Kurta', slug: 'w-women-anarkali-kurta',
       description: "W by Westside women's printed anarkali kurta with 3/4 sleeves and flowy fit. Crafted from cotton blend fabric.",
       brand: 'W', price: 1799, mrp: 3499, discount: 49, stock: 140, rating: 4.2, rating_count: 4530, featured: false,
       images: [

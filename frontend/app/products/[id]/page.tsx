@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   FiStar, FiShoppingCart, FiZap, FiTruck, FiShield,
-  FiChevronRight, FiChevronLeft, FiChevronDown, FiChevronUp,
+  FiChevronRight, FiChevronDown, FiChevronUp,
   FiCheck, FiMapPin, FiRefreshCw, FiMinus, FiPlus, FiArrowDown, FiHeart,
 } from "react-icons/fi";
 import { getProductById, getProducts, type Product } from "@/lib/api";
@@ -25,10 +25,10 @@ const deliveryDate = () => {
 };
 
 const BANK_OFFERS = [
-  { tag: "Bank Offer",   text: "10% off on SBI Credit Cards, up to ₹1,500. T&C apply" },
-  { tag: "Bank Offer",   text: "5% Unlimited Cashback on Flipkart Axis Bank Credit Card" },
-  { tag: "No Cost EMI",  text: "No Cost EMI on select cards – EMI starting from ₹599/month" },
-  { tag: "Special Price",text: "Get extra 5% off (price inclusive of discount)" },
+  { tag: "Bank Offer", text: "10% off on SBI Credit Cards, up to ₹1,500. T&C apply" },
+  { tag: "Bank Offer", text: "5% Unlimited Cashback on Flipkart Axis Bank Credit Card" },
+  { tag: "No Cost EMI", text: "No Cost EMI on select cards – EMI starting from ₹599/month" },
+  { tag: "Special Price", text: "Get extra 5% off (price inclusive of discount)" },
 ];
 
 export default function ProductDetailPage() {
@@ -38,20 +38,20 @@ export default function ProductDetailPage() {
   const { user } = useAuth();
   const { isInWishlist, toggle: toggleWishlist } = useWishlist();
 
-  const [product, setProduct]               = useState<Product | null>(null);
-  const [loading, setLoading]               = useState(true);
-  const [activeIdx, setActiveIdx]           = useState(0);
-  const [quantity, setQuantity]             = useState(1);
-  const [pincode, setPincode]               = useState("");
-  const [pincodeMsg, setPincodeMsg]         = useState("");
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const [quantity, setQuantity] = useState(1);
+  const [pincode, setPincode] = useState("");
+  const [pincodeMsg, setPincodeMsg] = useState("");
   const [offersExpanded, setOffersExpanded] = useState(false);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
-  const [toast, setToast]                     = useState<{ show: boolean; fading: boolean }>({ show: false, fading: false });
-  const [justAdded, setJustAdded]             = useState(false);
-  const [addedThisVisit, setAddedThisVisit]   = useState(false);
-  const toastTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [toast, setToast] = useState<{ show: boolean; fading: boolean }>({ show: false, fading: false });
+  const [justAdded, setJustAdded] = useState(false);
+  const [addedThisVisit, setAddedThisVisit] = useState(false);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toastFadeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const popTimer     = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const popTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -59,7 +59,6 @@ export default function ProductDetailPage() {
     getProductById(Number(id))
       .then((res) => {
         setProduct(res.data.data);
-        setActiveIdx(0);
         return getProducts({ category: res.data.data.category_slug, limit: 8 });
       })
       .then((res) => setSimilarProducts(res.data.data.filter((p) => p.id !== Number(id))))
@@ -70,7 +69,7 @@ export default function ProductDetailPage() {
   const inCart = items.some((i) => i.product_id === product?.id);
 
   const showToast = () => {
-    if (toastTimer.current)   clearTimeout(toastTimer.current);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
     if (toastFadeRef.current) clearTimeout(toastFadeRef.current);
     setToast({ show: true, fading: false });
     toastTimer.current = setTimeout(() => {
@@ -110,8 +109,8 @@ export default function ProductDetailPage() {
             <div className="h-[420px] animate-pulse rounded-sm bg-white" />
           </div>
           <div className="flex-1 space-y-3">
-            {[100,80,60,50,70,40].map((w,i) => (
-              <div key={i} className="h-5 animate-pulse rounded bg-white" style={{width:`${w}%`}} />
+            {[100, 80, 60, 50, 70, 40].map((w, i) => (
+              <div key={i} className="h-5 animate-pulse rounded bg-white" style={{ width: `${w}%` }} />
             ))}
           </div>
         </div>
@@ -126,7 +125,19 @@ export default function ProductDetailPage() {
     </div>
   );
 
-  const images   = product.images?.length ? product.images.map(i => i.image_url) : product.thumbnail ? [product.thumbnail] : [];
+  /* Build image list — reuse thumbnail when API has no separate images */
+  const rawImages = product.images?.length
+    ? product.images.map(i => i.image_url)
+    : product.thumbnail
+      ? [product.thumbnail]
+      : [];
+  /* Duplicate to fill a 2-column scrollable grid (like Flipkart product page) */
+  const images = rawImages.length === 1
+    ? [rawImages[0], rawImages[0], rawImages[0], rawImages[0], rawImages[0], rawImages[0]]
+    : rawImages.length > 0 && rawImages.length < 4
+      ? [...rawImages, ...rawImages].slice(0, 6)
+      : rawImages;
+
   const price    = Number(product.price);
   const mrp      = Number(product.mrp);
   const discount = product.discount_percent;
@@ -152,67 +163,48 @@ export default function ProductDetailPage() {
       <div className="mx-auto max-w-[1400px] px-3 py-4">
         <div className="flex flex-col gap-4 lg:flex-row">
 
-          {/* ══ LEFT — IMAGE CAROUSEL ══ */}
-          <div className="lg:w-[500px] lg:shrink-0">
-            <div className="sticky top-[96px] overflow-hidden rounded-sm bg-white shadow-sm">
-
-              {/* Main image */}
-              <div className="relative flex items-center justify-center" style={{minHeight:340}}>
-                {images.length > 1 && (
-                  <button
-                    onClick={() => setActiveIdx(p => Math.max(0, p - 1))}
-                    disabled={activeIdx === 0}
-                    className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-1.5 shadow-md hover:shadow-lg disabled:opacity-0 transition-all"
-                  >
-                    <FiChevronLeft size={20} />
-                  </button>
-                )}
-                <div className="relative h-[340px] w-full">
-                  {images.length > 0 ? (
-                    <Image
-                      key={activeIdx}
-                      src={images[activeIdx]}
-                      alt={product.name}
-                      fill
-                      sizes="(max-width:1024px) 100vw, 500px"
-                      className="object-contain p-4"
-                      priority
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-sm text-gray-300">No image</div>
+          {/* ══ LEFT — SCROLLABLE 2-COLUMN IMAGE GRID (Flipkart style) ══ */}
+          <div className="lg:w-[560px] lg:shrink-0">
+            <div className="sticky top-[96px]">
+              {images.length > 0 ? (
+                <div className="image-grid-container overflow-y-auto rounded-sm" style={{ maxHeight: "calc(100vh - 120px)" }}>
+                  <div className="grid grid-cols-2 gap-[2px] bg-gray-200">
+                    {images.map((src, i) => (
+                      <div
+                        key={i}
+                        className="relative bg-white cursor-pointer group"
+                        style={{ aspectRatio: "3/4" }}
+                      >
+                        <Image
+                          src={src}
+                          alt={`${product.name} - View ${i + 1}`}
+                          fill
+                          sizes="(max-width:1024px) 50vw, 280px"
+                          className="object-contain p-3 transition-transform duration-300 group-hover:scale-105"
+                          priority={i < 2}
+                        />
+                        {/* Wishlist heart on first image */}
+                        {i === 1 && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); if (user) toggleWishlist(product.id); }}
+                            className={`absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow transition-colors ${
+                              isInWishlist(product.id) ? "text-fk-red" : "text-gray-400 hover:text-fk-red"
+                            }`}
+                          >
+                            <FiHeart size={16} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {!inStock && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
+                      <span className="rounded-sm border border-gray-400 bg-white px-4 py-2 text-sm font-medium text-gray-500">Out of stock</span>
+                    </div>
                   )}
                 </div>
-                {images.length > 1 && (
-                  <button
-                    onClick={() => setActiveIdx(p => Math.min(images.length - 1, p + 1))}
-                    disabled={activeIdx === images.length - 1}
-                    className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-1.5 shadow-md hover:shadow-lg disabled:opacity-0 transition-all"
-                  >
-                    <FiChevronRight size={20} />
-                  </button>
-                )}
-                {!inStock && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/70">
-                    <span className="rounded-sm border border-gray-400 bg-white px-3 py-1 text-sm font-medium text-gray-500">Out of stock</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Thumbnail strip — horizontal scroll row */}
-              {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto border-t border-gray-100 px-4 py-3 hide-scrollbar">
-                  {images.map((src, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveIdx(i)}
-                      className={`relative h-[60px] w-[60px] shrink-0 overflow-hidden rounded border-2 transition-all ${
-                        activeIdx === i ? "border-fk-blue" : "border-gray-200 hover:border-gray-400"
-                      }`}
-                    >
-                      <Image src={src} alt={`view ${i+1}`} fill className="object-contain p-1" />
-                    </button>
-                  ))}
-                </div>
+              ) : (
+                <div className="flex h-[400px] items-center justify-center rounded-sm bg-white text-sm text-gray-300 shadow-sm">No image</div>
               )}
             </div>
           </div>
@@ -285,7 +277,7 @@ export default function ProductDetailPage() {
             <div className="overflow-hidden rounded-sm bg-white shadow-sm">
               <div
                 className="flex cursor-pointer items-center justify-between px-4 py-3"
-                style={{background:"linear-gradient(135deg,#1a3c8f 0%,#2874f0 100%)"}}
+                style={{ background: "linear-gradient(135deg,#1a3c8f 0%,#2874f0 100%)" }}
                 onClick={() => setOffersExpanded(o => !o)}
               >
                 <div className="flex items-center gap-3">
@@ -296,7 +288,7 @@ export default function ProductDetailPage() {
                 </div>
                 {offersExpanded ? <FiChevronUp size={18} className="text-white" /> : <FiChevronDown size={18} className="text-white" />}
               </div>
-              <div className="overflow-hidden transition-all duration-300" style={{maxHeight: offersExpanded ? `${BANK_OFFERS.length * 72}px` : "40px"}}>
+              <div className="overflow-hidden transition-all duration-300" style={{ maxHeight: offersExpanded ? `${BANK_OFFERS.length * 72}px` : "40px" }}>
                 {!offersExpanded && (
                   <p className="bg-blue-50 px-4 py-2.5 text-xs text-fk-text-light">Apply offers for maximum savings!</p>
                 )}
@@ -322,7 +314,7 @@ export default function ProductDetailPage() {
                   type="text"
                   maxLength={6}
                   value={pincode}
-                  onChange={(e) => { setPincode(e.target.value.replace(/\D/g,"")); setPincodeMsg(""); }}
+                  onChange={(e) => { setPincode(e.target.value.replace(/\D/g, "")); setPincodeMsg(""); }}
                   placeholder="Enter pincode"
                   className="w-36 rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-fk-blue focus:outline-none"
                 />
@@ -333,10 +325,10 @@ export default function ProductDetailPage() {
               )}
               <div className="mt-4 space-y-3 border-t border-gray-100 pt-4">
                 {[
-                  {icon:FiTruck,    label:"Free Delivery",      detail:`by ${deliveryDate()}`},
-                  {icon:FiRefreshCw,label:"7 Day Replacement",  detail:"Easy returns"},
-                  {icon:FiShield,   label:"1 Year Warranty",    detail:"by manufacturer"},
-                ].map(({icon:Icon,label,detail}) => (
+                  { icon: FiTruck, label: "Free Delivery", detail: `by ${deliveryDate()}` },
+                  { icon: FiRefreshCw, label: "7 Day Replacement", detail: "Easy returns" },
+                  { icon: FiShield, label: "1 Year Warranty", detail: "by manufacturer" },
+                ].map(({ icon: Icon, label, detail }) => (
                   <div key={label} className="flex items-center gap-3">
                     <Icon size={18} className="shrink-0 text-fk-text-light" />
                     <span className="text-sm font-medium text-fk-text">{label}</span>
@@ -373,33 +365,30 @@ export default function ProductDetailPage() {
             {/* ══ Wishlist button ══ */}
             <button
               onClick={() => { if (user && product) toggleWishlist(product.id); }}
-              className={`flex w-full items-center justify-center gap-2 rounded-sm border py-3 text-sm font-semibold transition-colors ${
-                product && isInWishlist(product.id)
+              className={`flex w-full items-center justify-center gap-2 rounded-sm border py-3 text-sm font-semibold transition-colors ${product && isInWishlist(product.id)
                   ? "border-fk-red bg-red-50 text-fk-red hover:bg-red-100"
                   : "border-gray-200 bg-white text-fk-text-light hover:border-fk-red hover:text-fk-red"
-              }`}
+                }`}
             >
               <FiHeart size={16} fill={product && isInWishlist(product.id) ? "currentColor" : "none"} />
               {product && isInWishlist(product.id) ? "Wishlisted" : "Add to Wishlist"}
             </button>
 
             {/* ══ CTA buttons ══ */}
-            <div className="flex overflow-hidden rounded-sm border border-gray-200 bg-white shadow-sm">
+            <div className="sticky bottom-0 z-30 flex overflow-hidden rounded-sm border border-gray-200 bg-white shadow-[0_-8px_18px_rgba(0,0,0,0.08)]">
               <button onClick={handleAddToCart} disabled={!inStock}
-                className={`flex flex-1 items-center justify-center gap-2 py-4 text-sm font-bold transition-colors duration-200 sm:text-base ${justAdded ? "btn-pop" : ""} ${
-                  !inStock
+                className={`flex flex-1 items-center justify-center gap-2 py-4 text-sm font-bold transition-colors duration-200 sm:text-base ${justAdded ? "btn-pop" : ""} ${!inStock
                     ? "cursor-not-allowed bg-gray-100 text-gray-400"
                     : addedThisVisit
                       ? "border-r border-fk-blue-dark bg-fk-blue text-white hover:bg-fk-blue-dark"
                       : "border-r border-gray-200 bg-white text-fk-text hover:bg-gray-50"
-                }`}>
+                  }`}>
                 <FiShoppingCart size={18} className={`transition-colors duration-200 ${addedThisVisit ? "text-white" : "text-fk-orange"}`} />
                 <span>{addedThisVisit ? "Go to Cart" : "Add to Cart"}</span>
               </button>
               <button onClick={handleBuyNow} disabled={!inStock}
-                className={`flex flex-1 items-center justify-center gap-2 py-4 text-sm font-bold transition-all sm:text-base ${
-                  !inStock ? "cursor-not-allowed bg-gray-200 text-gray-400" : "bg-fk-yellow text-fk-text hover:brightness-95 active:scale-[0.99]"
-                }`}>
+                className={`flex flex-1 items-center justify-center gap-2 py-4 text-sm font-bold transition-all sm:text-base ${!inStock ? "cursor-not-allowed bg-gray-200 text-gray-400" : "bg-fk-yellow text-fk-text hover:brightness-95 active:scale-[0.99]"
+                  }`}>
                 <FiZap size={18} />
                 Buy at ₹{fmt(price)}
               </button>
@@ -412,7 +401,7 @@ export default function ProductDetailPage() {
           <div className="mt-4 rounded-sm bg-white p-4 shadow-sm">
             <h2 className="mb-4 border-b border-gray-100 pb-2 text-base font-semibold text-fk-text">Similar Products</h2>
             <div className="grid grid-cols-2 gap-px bg-gray-200 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-              {similarProducts.slice(0,6).map(p => <ProductCard key={p.id} product={p} />)}
+              {similarProducts.slice(0, 6).map(p => <ProductCard key={p.id} product={p} />)}
             </div>
           </div>
         )}
@@ -423,11 +412,10 @@ export default function ProductDetailPage() {
       {/* ══ Toast notification ══ */}
       {toast.show && (
         <div
-          className={`fixed bottom-20 right-4 z-50 flex min-w-[260px] max-w-[340px] items-center gap-3 rounded-lg bg-[#212121] px-4 py-3 shadow-2xl ${
-            toast.fading
+          className={`fixed bottom-20 right-4 z-50 flex min-w-[260px] max-w-[340px] items-center gap-3 rounded-lg bg-[#212121] px-4 py-3 shadow-2xl ${toast.fading
               ? "opacity-0 translate-y-3 transition-all duration-300"
               : "toast-enter"
-          }`}
+            }`}
         >
           {product?.thumbnail && (
             <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded bg-white">
