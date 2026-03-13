@@ -3,7 +3,7 @@ const { asyncHandler } = require('../middlewares/errorHandler');
 
 // GET /api/products
 const getProducts = asyncHandler(async (req, res) => {
-  const { search, category, sort } = req.query;
+  const { search, category, sort, minRating } = req.query;
 
   const params = [];
   const conditions = [];
@@ -36,6 +36,14 @@ const getProducts = asyncHandler(async (req, res) => {
   if (category) {
     params.push(category);
     conditions.push(`c.slug = $${params.length}`);
+  }
+
+  if (minRating !== undefined && minRating !== '') {
+    const parsedRating = parseFloat(minRating);
+    if (!Number.isNaN(parsedRating)) {
+      params.push(parsedRating);
+      conditions.push(`p.rating >= $${params.length}`);
+    }
   }
 
   if (conditions.length) {

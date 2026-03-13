@@ -31,10 +31,10 @@ export default function CartPage() {
   const totalSavings = totalDiscount - PLATFORM_FEE;
 
   return (
-    <div className="mx-auto flex max-w-[1400px] items-start gap-4 px-4 py-4">
+    <div className="mx-auto flex max-w-[1400px] flex-col gap-4 px-4 py-4 lg:flex-row lg:items-start">
       {/* Left: Cart Items */}
       <div className="flex-1 min-w-0">
-        <div className="mb-3 flex items-center justify-between rounded-sm bg-white px-5 py-3 shadow-sm">
+        <div className="mb-3 flex flex-col items-start justify-between gap-2 rounded-sm bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:px-5">
           <span className="text-sm text-fk-text-light">Deliver to</span>
           <button className="rounded border border-fk-blue px-4 py-1.5 text-sm font-medium text-fk-blue hover:bg-blue-50 transition-colors">
             Enter Delivery Pincode

@@ -41,6 +41,7 @@ function ProductsContent() {
   const urlSearch = searchParams.get("search") || "";
   const urlCategory = searchParams.get("category") || "";
   const urlSort = searchParams.get("sort") || "";
+  const urlMinRating = Number(searchParams.get("rating") || 0);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -49,7 +50,7 @@ function ProductsContent() {
   const [search, setSearch] = useState(urlSearch);
   const [category, setCategory] = useState(urlCategory);
   const [sort, setSort] = useState(urlSort);
-  const [minRating, setMinRating] = useState(0);
+  const [minRating, setMinRating] = useState(urlMinRating);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [sortOpen, setSortOpen] = useState(false);
@@ -60,7 +61,8 @@ function ProductsContent() {
     setSearch(urlSearch);
     setCategory(urlCategory);
     setSort(urlSort);
-  }, [urlSearch, urlCategory, urlSort]);
+    setMinRating(Number.isNaN(urlMinRating) ? 0 : urlMinRating);
+  }, [urlSearch, urlCategory, urlSort, urlMinRating]);
 
   // Close sort dropdown on outside click
   useEffect(() => {
@@ -88,6 +90,7 @@ function ProductsContent() {
       if (search) params.search = search;
       if (category) params.category = category;
       if (sort) params.sort = sort;
+      if (minRating > 0) params.minRating = String(minRating);
       const res = await getProducts(params);
       setProducts(res.data.data);
     } catch {
@@ -95,7 +98,7 @@ function ProductsContent() {
     } finally {
       setLoading(false);
     }
-  }, [search, category, sort]);
+  }, [search, category, sort, minRating]);
 
   useEffect(() => {
     fetchProducts();
@@ -108,11 +111,12 @@ function ProductsContent() {
       if (search) params.set("search", search);
       if (category) params.set("category", category);
       if (sort) params.set("sort", sort);
+      if (minRating > 0) params.set("rating", String(minRating));
       const qs = params.toString();
       router.replace(`/products${qs ? `?${qs}` : ""}`, { scroll: false });
     }, 400);
     return () => clearTimeout(timer);
-  }, [search, category, sort, router]);
+  }, [search, category, sort, minRating, router]);
 
   // Client-side rating + price filter
   const filteredProducts = useMemo(() => {
@@ -143,10 +147,10 @@ function ProductsContent() {
       {/* Main */}
       <div className="flex-1">
         {/* Top bar */}
-        <div className="mb-3 rounded-sm bg-white px-4 py-3 shadow-sm">
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="mb-3 rounded-sm bg-white px-3 py-3 shadow-sm sm:px-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             {/* Search */}
-            <div className="relative flex-1 min-w-[200px]">
+            <div className="relative w-full sm:flex-1 sm:min-w-[220px]">
               <FiSearch size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
@@ -171,12 +175,12 @@ function ProductsContent() {
             </span>
 
             {/* Sort */}
-            <div className="flex items-center gap-2 ml-auto">
-              <span className="text-xs font-semibold uppercase tracking-wider text-fk-text-light">Sort</span>
+            <div className="flex w-full items-center justify-between gap-2 sm:ml-auto sm:w-auto sm:justify-start">
+              <span className="text-xs font-semibold uppercase tracking-wider text-fk-text-light sm:whitespace-nowrap">Sort</span>
               <div className="relative" ref={sortRef}>
                 <button
                   onClick={() => setSortOpen((o) => !o)}
-                  className={`flex min-w-[180px] items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                  className={`flex w-[190px] items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition sm:w-auto sm:min-w-[180px] ${
                     sortOpen ? "border-fk-blue bg-fk-blue/5 text-fk-blue" : "border-gray-200 bg-white text-fk-text hover:border-fk-blue"
                   } focus:outline-none`}
                 >

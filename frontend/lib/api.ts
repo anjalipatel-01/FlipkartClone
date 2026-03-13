@@ -44,6 +44,7 @@ export const getProducts = (params?: {
   search?: string;
   category?: string;
   sort?: string;
+  minRating?: number;
   limit?: number;
 }) => api.get<ApiResponse<Product[]>>("/api/products", { params });
 

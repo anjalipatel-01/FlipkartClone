@@ -15,6 +15,7 @@ const BANNERS = [
     accent: "#ffe082",
     href: "/products",
     emojis: ["📱", "💻", "👟", "🎧"],
+    perks: ["Free Delivery", "No Cost EMI", "Easy Returns"],
   },
   {
     title: "Electronics Mega Sale",
@@ -25,6 +26,7 @@ const BANNERS = [
     accent: "#ffcc80",
     href: "/products?category=electronics",
     emojis: ["🖥️", "📱", "⌚", "🎮"],
+    perks: ["Top Rated", "Express Shipping", "Bank Offers"],
   },
   {
     title: "Fashion Fiesta",
@@ -35,6 +37,7 @@ const BANNERS = [
     accent: "#ce93d8",
     href: "/products?category=fashion",
     emojis: ["👗", "👠", "👜", "🕶️"],
+    perks: ["Fresh Arrivals", "Extra Discounts", "Popular Picks"],
   },
 ];
 
@@ -80,9 +83,9 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-[1400px] px-3 py-4 pt-6">
+    <div className="mx-auto max-w-[1480px] px-1 py-3 pt-4 sm:px-2 sm:py-4 sm:pt-6">
       {/* Hero Banner */}
-      <div className="relative mb-3 w-full overflow-hidden rounded-md shadow-md" style={{ height: "280px" }}>
+      <div className="relative mb-3 h-[250px] w-full overflow-hidden rounded-md shadow-xl ring-1 ring-black/10 sm:h-[290px] lg:h-[320px]">
         {/* Slides */}
         {BANNERS.map((b, i) => (
           <div
@@ -101,9 +104,12 @@ export default function HomePage() {
             <div className="absolute right-[20%] top-[10%] h-40 w-40 rounded-full opacity-[0.07]" style={{ background: b.accent }} />
             {/* Diagonal stripe */}
             <div className="absolute -right-10 top-0 h-full w-[200px] skew-x-[-12deg] opacity-[0.06]" style={{ background: b.accent }} />
+            {/* Ambient depth + sheen */}
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(255,255,255,0.2),transparent_34%),radial-gradient(circle_at_88%_84%,rgba(255,255,255,0.14),transparent_38%)]" />
+            <div className="hero-slide-sheen pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
             {/* Content */}
-            <div className="relative z-10 flex w-full items-center justify-between px-10 sm:px-16">
+            <div className="relative z-10 flex h-full w-full items-center justify-between px-4 sm:px-10 lg:px-16">
               <div className="max-w-lg">
                 {/* Tag badge */}
                 <span
@@ -112,15 +118,25 @@ export default function HomePage() {
                 >
                   ⚡ {b.tag}
                 </span>
-                <h1 className="text-4xl font-extrabold leading-tight text-white sm:text-5xl md:text-6xl">
+                <h1 className="text-2xl font-extrabold leading-tight text-white sm:text-4xl md:text-5xl lg:text-6xl">
                   {b.title}
                 </h1>
-                <p className="mt-2 text-base font-medium text-white/70 sm:text-lg">
+                <p className="mt-1 text-sm font-medium text-white/70 sm:mt-2 sm:text-base lg:text-lg">
                   {b.subtitle}
                 </p>
+                <div className="mt-3 hidden flex-wrap gap-2 sm:flex">
+                  {b.perks.map((perk) => (
+                    <span
+                      key={perk}
+                      className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white/90 backdrop-blur"
+                    >
+                      {perk}
+                    </span>
+                  ))}
+                </div>
                 <Link
                   href={b.href}
-                  className="group mt-5 inline-flex items-center gap-2 rounded-md px-7 py-3 text-sm font-bold shadow-lg transition-transform hover:scale-105"
+                  className="group mt-2 inline-flex items-center gap-2 rounded-md px-5 py-2 text-xs font-bold shadow-lg transition-transform hover:scale-105 sm:mt-4 sm:px-7 sm:py-3 sm:text-sm"
                   style={{ backgroundColor: b.accent, color: "#1a1a1a" }}
                 >
                   {b.cta}
@@ -135,7 +151,7 @@ export default function HomePage() {
                 {b.emojis.map((emoji, j) => (
                   <div
                     key={j}
-                    className="flex h-24 w-24 items-center justify-center rounded-2xl bg-white/10 text-4xl backdrop-blur-sm transition-transform hover:scale-110"
+                    className="hero-emoji-card flex h-24 w-24 items-center justify-center rounded-2xl bg-white/10 text-4xl backdrop-blur-sm transition-transform hover:scale-110"
                     style={{ animationDelay: `${j * 0.15}s` }}
                   >
                     {emoji}
@@ -149,13 +165,13 @@ export default function HomePage() {
         {/* Left / Right arrows */}
         <button
           onClick={() => setBannerIdx((prev) => (prev - 1 + BANNERS.length) % BANNERS.length)}
-          className="absolute left-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition hover:bg-white/40"
+          className="absolute left-2 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition hover:bg-white/40 sm:flex"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
         </button>
         <button
           onClick={() => setBannerIdx((prev) => (prev + 1) % BANNERS.length)}
-          className="absolute right-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition hover:bg-white/40"
+          className="absolute right-2 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition hover:bg-white/40 sm:flex"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
         </button>
@@ -190,14 +206,14 @@ export default function HomePage() {
               style={{ backgroundColor: section.color }}
             >
               {/* Colored header */}
-              <div className="flex items-center justify-between px-5 py-3">
+              <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
                 <div>
-                  <h2 className="text-xl font-bold text-white">{section.title}</h2>
+                  <h2 className="text-base font-bold text-white sm:text-xl">{section.title}</h2>
                   <p className="text-xs text-white/70 mt-0.5">{items.length} products</p>
                 </div>
                 <Link
                   href={`/products?category=${section.categorySlug}`}
-                  className="flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-xs font-bold shadow hover:bg-gray-100 transition-colors"
+                  className="flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[11px] font-bold shadow transition-colors hover:bg-gray-100 sm:px-4 sm:text-xs"
                   style={{ color: section.color }}
                 >
                   View All
@@ -213,8 +229,7 @@ export default function HomePage() {
                   <Link
                     key={product.id}
                     href={`/products/${product.id}`}
-                    className="flex shrink-0 flex-col rounded-md bg-white transition-shadow hover:shadow-lg"
-                    style={{ width: "calc(25% - 6px)" }}
+                    className="flex w-[76%] shrink-0 flex-col rounded-md bg-white transition-shadow hover:shadow-lg sm:w-[46%] md:w-[31%] lg:w-[24%]"
                   >
                     <div className="relative h-[140px] rounded-t-md bg-[#f5f5f5]">
                       {product.thumbnail ? (
@@ -256,8 +271,7 @@ export default function HomePage() {
                 {/* "See All" card — last item, same width as product cards */}
                 <Link
                   href={`/products?category=${section.categorySlug}`}
-                  className="flex shrink-0 flex-col items-center justify-center gap-3 rounded-md bg-white/90 hover:bg-white transition-colors"
-                  style={{ width: "calc(25% - 6px)" }}
+                  className="flex w-[76%] shrink-0 flex-col items-center justify-center gap-3 rounded-md bg-white/90 transition-colors hover:bg-white sm:w-[46%] md:w-[31%] lg:w-[24%]"
                 >
                   <div
                     className="flex h-12 w-12 items-center justify-center rounded-full shadow"

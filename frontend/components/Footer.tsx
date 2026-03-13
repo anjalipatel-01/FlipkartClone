@@ -31,8 +31,8 @@ const CONSUMER_POLICY = [
 export default function Footer() {
   return (
     <footer className="bg-[#172337] text-white mt-2">
-      <div className="max-w-[1400px] mx-auto px-6 py-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
+      <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 sm:py-10">
+        <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 xl:gap-8">
           {/* ABOUT */}
           <div>
             <h4 className="text-[#878787] text-xs font-semibold mb-3 tracking-wide">
@@ -183,7 +183,7 @@ export default function Footer() {
 
       {/* Bottom border */}
       <div className="border-t border-[#ffffff1a]">
-        <div className="max-w-[1400px] mx-auto px-6 py-5 text-center">
+        <div className="mx-auto max-w-[1400px] px-4 py-4 text-center sm:px-6 sm:py-5">
           <p className="text-xs text-[#878787]">
             &copy; 2007-2024 Flipkart.com
           </p>

@@ -112,7 +112,7 @@ export default function CheckoutPage() {
 
       <CheckoutSteps step={step} />
 
-      <div className="mx-auto flex max-w-[1400px] items-start gap-4 px-4 py-4">
+      <div className="mx-auto flex max-w-[1400px] flex-col gap-4 px-4 py-4 lg:flex-row lg:items-start">
         {/* Left column */}
         <div className="flex-1 min-w-0">
           {error && (
@@ -143,7 +143,7 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        {/* Right column — Price summary */}
+        {/* Right column ï¿½ Price summary */}
         <div className="hidden w-[340px] shrink-0 lg:block">
           <div className="rounded-sm bg-white shadow-sm">
             <div className="border-b border-gray-200 px-5 py-4">

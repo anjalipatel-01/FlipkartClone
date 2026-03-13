@@ -93,3 +93,38 @@ body {
 .btn-pop {
   animation: btn-pop 0.28s ease-out forwards;
 }
+
+@keyframes hero-sheen {
+  0% {
+    transform: translateX(-130%);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(380%);
+    opacity: 0;
+  }
+}
+
+@keyframes hero-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.hero-slide-sheen {
+  animation: hero-sheen 5.6s ease-in-out infinite;
+}
+
+.hero-emoji-card {
+  animation: hero-float 2.8s ease-in-out infinite;
+}
