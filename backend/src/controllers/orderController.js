@@ -22,10 +22,22 @@ const placeOrder = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: 'Cart is empty' });
   }
 
-  // Extract and validate product_id / quantity from the request
-  const requestedItems = items.map((i) => ({
-    product_id: Number(i.product_id),
-    quantity: Number(i.quantity),
+  // Extract, normalize and merge duplicate product_id rows from the request.
+  const qtyByProductId = new Map();
+  for (const i of items) {
+    const product_id = Number(i.product_id);
+    const quantity = Number(i.quantity);
+
+    if (!product_id || !quantity || quantity < 1) {
+      return res.status(400).json({ success: false, message: 'Invalid item in cart' });
+    }
+
+    qtyByProductId.set(product_id, (qtyByProductId.get(product_id) || 0) + quantity);
+  }
+
+  const requestedItems = Array.from(qtyByProductId.entries()).map(([product_id, quantity]) => ({
+    product_id,
+    quantity,
   }));
 
   for (const ri of requestedItems) {
@@ -49,7 +61,7 @@ const placeOrder = asyncHandler(async (req, res) => {
       [productIds]
     );
 
-    if (products.length !== productIds.length) {
+    if (products.length !== requestedItems.length) {
       await client.query('ROLLBACK');
       return res.status(400).json({ success: false, message: 'One or more products not found' });
     }

@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getOrders, type Order } from "@/lib/api";
 import { useAuth } from "@/lib/authContext";
-import { FiPackage, FiChevronRight, FiShoppingBag } from "react-icons/fi";
+import { FiPackage, FiChevronRight, FiShoppingBag, FiCheckCircle } from "react-icons/fi";
 
 export default function OrdersPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const placedOrderId = searchParams.get("placed");
 
   useEffect(() => {
     if (authLoading) return;
@@ -53,6 +55,16 @@ export default function OrdersPage() {
 
       <div className="mx-auto max-w-[1000px] px-4 py-6">
         <h1 className="mb-5 text-xl font-bold text-fk-text">My Orders</h1>
+
+        {placedOrderId && (
+          <div className="mb-4 flex items-start gap-3 rounded-sm border border-green-200 bg-green-50 px-4 py-3">
+            <FiCheckCircle size={18} className="mt-0.5 shrink-0 text-fk-green" />
+            <div>
+              <p className="text-sm font-semibold text-fk-text">Order placed successfully</p>
+              <p className="text-sm text-fk-text-light">Order ID: #{placedOrderId}</p>
+            </div>
+          </div>
+        )}
 
         {orders.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 rounded-sm bg-white py-16 shadow-sm">

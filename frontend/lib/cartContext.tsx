@@ -37,6 +37,50 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 const STORAGE_KEY = "fk_cart";
 
+const normalizeCartItems = (raw: unknown): CartItem[] => {
+  if (!Array.isArray(raw)) return [];
+
+  const byId = new Map<number, CartItem>();
+
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+
+    const i = item as Partial<CartItem> & { product_id?: number | string };
+    const productId = Number(i.product_id);
+    const price = Number(i.price);
+    const mrp = Number(i.mrp);
+    const stock = Number(i.stock);
+    const quantity = Number(i.quantity);
+
+    if (!Number.isInteger(productId) || productId <= 0) continue;
+    if (!Number.isFinite(price) || !Number.isFinite(mrp) || !Number.isFinite(stock)) continue;
+
+    const safeQty = Number.isFinite(quantity) && quantity > 0 ? Math.min(Math.floor(quantity), Math.max(1, stock || 1)) : 1;
+
+    const normalized: CartItem = {
+      product_id: productId,
+      name: typeof i.name === "string" ? i.name : "",
+      brand: typeof i.brand === "string" ? i.brand : "",
+      price,
+      mrp,
+      discount_percent: Number(i.discount_percent) || 0,
+      thumbnail: typeof i.thumbnail === "string" ? i.thumbnail : null,
+      quantity: safeQty,
+      stock: Math.max(1, Math.floor(stock)),
+    };
+
+    const existing = byId.get(productId);
+    if (existing) {
+      const mergedQty = Math.min(existing.quantity + normalized.quantity, normalized.stock);
+      byId.set(productId, { ...normalized, quantity: mergedQty });
+    } else {
+      byId.set(productId, normalized);
+    }
+  }
+
+  return Array.from(byId.values());
+};
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -45,7 +89,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setItems(JSON.parse(raw));
+      if (raw) setItems(normalizeCartItems(JSON.parse(raw)));
     } catch {}
     setHydrated(true);
   }, []);
@@ -59,10 +103,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addToCart = useCallback((product: Product) => {
     setItems((prev) => {
-      const existing = prev.find((i) => i.product_id === product.id);
+      const existing = prev.find((i) => Number(i.product_id) === Number(product.id));
       if (existing) {
         return prev.map((i) =>
-          i.product_id === product.id
+          Number(i.product_id) === Number(product.id)
             ? { ...i, quantity: Math.min(i.quantity + 1, product.stock) }
             : i
         );

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FiChevronRight, FiShield } from "react-icons/fi";
 import { useCart } from "@/lib/cartContext";
 import { useAuth } from "@/lib/authContext";
-import { placeOrder } from "@/lib/api";
+import { getProductById, placeOrder } from "@/lib/api";
 import { PLATFORM_FEE } from "@/components/cart/PriceSummary";
 import CheckoutSteps from "@/components/checkout/CheckoutSteps";
 import AddressForm, { type AddressFormData } from "@/components/checkout/AddressForm";
@@ -14,8 +14,8 @@ import OrderReview from "@/components/checkout/OrderReview";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { user } = useAuth();
-  const { items, totalItems, totalPrice, totalMRP, totalDiscount, clearCart } = useCart();
+  const { user, loading } = useAuth();
+  const { items, totalItems, totalPrice, totalMRP, totalDiscount, clearCart, removeFromCart } = useCart();
 
   const [form, setForm] = useState<AddressFormData>({
     shipping_name: user?.name || "",
@@ -31,6 +31,23 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<"address" | "review">("address");
 
   const totalAmount = totalPrice + PLATFORM_FEE;
+
+  useEffect(() => {
+    if (!user) return;
+    setForm((prev) => ({
+      ...prev,
+      shipping_name: prev.shipping_name || user.name || "",
+      shipping_phone: prev.shipping_phone || user.phone || "",
+    }));
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-center gap-3 px-4 py-24">
+        <p className="text-base font-medium text-fk-text">Checking your login session...</p>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -80,12 +97,32 @@ export default function CheckoutPage() {
     setSubmitting(true);
     setError("");
     try {
+      const validationResults = await Promise.all(
+        items.map(async (i) => {
+          try {
+            await getProductById(i.product_id);
+            return { id: i.product_id, exists: true };
+          } catch {
+            return { id: i.product_id, exists: false };
+          }
+        })
+      );
+
+      const unavailableIds = validationResults.filter((r) => !r.exists).map((r) => r.id);
+      if (unavailableIds.length > 0) {
+        unavailableIds.forEach((id) => removeFromCart(id));
+        setError("Some items in your cart are no longer available and were removed. Please review your cart.");
+        setStep("address");
+        return;
+      }
+
       const res = await placeOrder({
         items: items.map((i) => ({ product_id: i.product_id, quantity: i.quantity })),
         ...form,
       });
+      const placedOrderId = res.data.data.id;
       clearCart();
-      router.push(`/orders/${res.data.data.id}/confirmation`);
+      router.replace(`/orders?placed=${placedOrderId}`);
     } catch (err: unknown) {
       const msg =
         err && typeof err === "object" && "response" in err
@@ -152,15 +189,15 @@ export default function CheckoutPage() {
             <div className="flex flex-col gap-3 px-5 py-4">
               <div className="flex justify-between text-sm text-fk-text">
                 <span>Price ({totalItems} item{totalItems !== 1 ? "s" : ""})</span>
-                <span>?{totalMRP.toLocaleString("en-IN")}</span>
+                <span>₹{totalMRP.toLocaleString("en-IN")}</span>
               </div>
               <div className="flex justify-between text-sm text-fk-text">
                 <span>Discount</span>
-                <span className="font-medium text-fk-green">- ?{totalDiscount.toLocaleString("en-IN")}</span>
+                <span className="font-medium text-fk-green">- ₹{totalDiscount.toLocaleString("en-IN")}</span>
               </div>
               <div className="flex justify-between text-sm text-fk-text">
                 <span>Platform Fee</span>
-                <span>?{PLATFORM_FEE}</span>
+                <span>₹{PLATFORM_FEE}</span>
               </div>
               <div className="flex justify-between text-sm text-fk-text">
                 <span>Delivery Charges</span>
@@ -169,7 +206,7 @@ export default function CheckoutPage() {
               <div className="border-t border-dashed border-gray-200" />
               <div className="flex justify-between text-base font-bold text-fk-text">
                 <span>Total Amount</span>
-                <span>?{totalAmount.toLocaleString("en-IN")}</span>
+                <span>₹{totalAmount.toLocaleString("en-IN")}</span>
               </div>
             </div>
             <div className="flex items-center gap-3 border-t border-gray-100 bg-gray-50 px-5 py-3">
